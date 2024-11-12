@@ -3,12 +3,13 @@ from geopy.geocoders import Nominatim
 import folium
 from io import BytesIO
 import streamlit.components.v1 as components
+import re
 
 # Set up the app with a wide layout (must be the first Streamlit command)
 st.set_page_config(layout="wide")
 
 # Title spanning across the top
-st.title("Add and Remove Location Markers on Map")
+st.title("Map My Locations")
 
 # Split the layout into two parts: Sidebar for list of locations and main area for the map
 sidebar = st.sidebar
@@ -17,6 +18,10 @@ map_area = st.container()
 # Initialize session state to store marker data
 if "locations" not in st.session_state:
     st.session_state["locations"] = []
+
+# Function to check if a string contains non-English characters
+def contains_non_english(text):
+    return bool(re.search(r'[^\x00-\x7F]', text))
 
 # Sidebar: Add input for location name and display list of locations
 with sidebar:
@@ -40,11 +45,18 @@ with sidebar:
                 location = geolocator.geocode(location_name)
 
                 if location:
-                    # Add the new location to the session state
+                    # Check if the returned location name contains non-English characters
+                    location_display_name = location.address
+                    if contains_non_english(location_display_name):
+                        location_display_name += f" ({location_name})"
+
+                    # Add the new location with full address to the session state
                     st.session_state["locations"].append({
                         "name": location_name,
+                        "full_address": location.address,  # Store the full address
                         "latitude": location.latitude,
-                        "longitude": location.longitude
+                        "longitude": location.longitude,
+                        "display_name": location_display_name
                     })
                     st.success(f"Location '{location_name}' added.")
                 else:
@@ -74,7 +86,7 @@ with map_area:
         folium.Marker(
             [loc["latitude"], loc["longitude"]],
             popup=loc["name"],
-            tooltip=loc["name"]  # Tooltip shows location name on hover
+            tooltip=loc["display_name"]  # Tooltip shows the full address on hover
         ).add_to(map_)
 
     # Render the map HTML as a string and display it in Streamlit
