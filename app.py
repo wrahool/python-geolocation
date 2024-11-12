@@ -48,7 +48,7 @@ with sidebar:
                     # Check if the returned location name contains non-English characters
                     location_display_name = location.address
                     if contains_non_english(location_display_name):
-                        location_display_name += f" ({location_name})"
+                        location_display_name += f" ({location_name.title()})"
 
                     # Add the new location with full address to the session state
                     st.session_state["locations"].append({
@@ -85,8 +85,8 @@ with map_area:
     for loc in st.session_state["locations"]:
         folium.Marker(
             [loc["latitude"], loc["longitude"]],
-            popup=loc["name"],
-            tooltip=loc["display_name"]  # Tooltip shows the full address on hover
+            popup=loc["display_name"],
+            # tooltip=loc["display_name"]  # Tooltip shows the full address on hover
         ).add_to(map_)
 
     # Render the map HTML as a string and display it in Streamlit
