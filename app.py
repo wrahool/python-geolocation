@@ -48,7 +48,7 @@ with sidebar:
 
     if len(location_name) >= 3:
         geolocator = Nominatim(user_agent="multi_location_app")
-        locations = geolocator.geocode(location_name, exactly_one=False, limit=5)
+        locations = geolocator.geocode(location_name, exactly_one=False, limit=5, language = "en")
         
         if locations:
             st.session_state["location_options"] = [
@@ -105,7 +105,8 @@ with map_area:
         for loc in st.session_state["locations"]:
             folium.Marker(
                 [loc["latitude"], loc["longitude"]],
-                popup=loc["display_name"]
+                popup=loc["display_name"],
+                tooltip=loc["display_name"]  # Tooltip appears on hover
             ).add_to(map_)
         
         map_file = BytesIO()
@@ -124,7 +125,8 @@ with map_area:
     for loc in st.session_state["locations"]:
         folium.Marker(
             [loc["latitude"], loc["longitude"]],
-            popup=loc["display_name"]
+            popup=loc["display_name"],
+            tooltip=loc["display_name"]
         ).add_to(map_)
 
     map_html = map_._repr_html_()
